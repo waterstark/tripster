@@ -24,7 +24,7 @@ class UserProfile(BaseModel):
     """Profile model."""
 
     id: uuid.UUID
-    user_id: uuid.UUID
+    email: str
 
 
 class UserProfileUpdate(BaseModel):

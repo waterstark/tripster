@@ -1,8 +1,14 @@
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, status
 
-from src.auth.base_config import auth_backend, fastapi_users_auth
-from src.auth.schemas import UserCreateInput, UserCreateOutput
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.auth.crud import get_user_profile
+from src.auth.models import AuthUser
+from src.auth.base_config import auth_backend, fastapi_users_auth, current_user
+from src.auth.schemas import UserCreateInput, UserCreateOutput, UserProfile
+from src.database import get_async_session
 
 auth_router = APIRouter(
     prefix="/auth",
@@ -17,37 +23,19 @@ auth_router.include_router(
     ),
 )
 
-# user_router = APIRouter(
-#     prefix="/users",
-#     tags=["User"],
-# )
+user_router = APIRouter(
+    prefix="/users",
+    tags=["User"],
+)
 
 
-# @user_router.get(
-#     "/me",
-#     response_model=schemas.UserProfile,
-#     status_code=status.HTTP_200_OK,
-# )
-# async def get_profile(
-#     user: Annotated[AuthUser, Depends(current_user)],
-#     session: Annotated[AsyncSession, Depends(get_async_session)],
-# ) -> schemas.UserProfile:
-#     return await crud.get_user_profile(user=user, session=session)
-
-
-# @user_router.patch(
-#     "/me",
-#     response_model=schemas.UserProfile,
-#     status_code=status.HTTP_200_OK,
-# )
-# async def update_profile(
-#     data: schemas.UserProfileUpdate,
-#     user: Annotated[AuthUser, Depends(current_user)],
-#     session: Annotated[AsyncSession, Depends(get_async_session)],
-# ) -> schemas.UserProfile:
-#     """Update user profile."""
-#     return await crud.update_user_profile(
-#         data=data,
-#         user=user,
-#         session=session,
-#     )
+@user_router.get(
+    "/me",
+    response_model=UserProfile,
+    status_code=status.HTTP_200_OK,
+)
+async def get_profile(
+    user: Annotated[AuthUser, Depends(current_user)],
+    session: Annotated[AsyncSession, Depends(get_async_session)],
+) -> UserProfile:
+    return await get_user_profile(user=user, session=session)

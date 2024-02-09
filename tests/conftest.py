@@ -14,7 +14,6 @@ from src.config import settings
 from src.database import Base, get_async_session
 
 
-
 DATABASE_URL_TEST = settings.db_url_postgresql
 
 engine_test = create_async_engine(DATABASE_URL_TEST, poolclass=NullPool)
@@ -76,6 +75,12 @@ async def auth_user(ac: AsyncClient) -> Response:
         data=data,
     )
     ac.cookies.set(name="tripster", value=response.cookies.get("tripster"))
+    return response
+
+
+@pytest.fixture()
+async def get_user(ac: AsyncClient) -> Response:
+    response = await ac.get("users/me")
     return response
 
 

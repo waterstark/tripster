@@ -1,11 +1,12 @@
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.models import AuthUser
-from src.auth.schemas import UserCreateInput
+from src.auth.schemas import UserCreateInput, UserCreateOutput, UserProfile
 
 
-async def add_user(user: UserCreateInput, session: AsyncSession):
+async def add_user(user: UserCreateInput, session: AsyncSession) -> UserCreateOutput:
     stmt = (
         insert(AuthUser)
         .values(
@@ -22,11 +23,12 @@ async def add_user(user: UserCreateInput, session: AsyncSession):
     return user
 
 
-# async def get_user_profile(
-#     user: AuthUser,
-#     session: AsyncSession,
-# ) -> UserProfile:
-#     """Get user profile."""
-#     stmt = select(UserSettings).filter_by(user_id=user.id)
-#     profile = await session.execute(stmt)
-#     return schemas.UserProfile.validate(profile.scalars().first())
+async def get_user_profile(
+    user: AuthUser,
+    session: AsyncSession,
+) -> UserProfile:
+    """Get user profile."""
+    stmt = select(AuthUser).filter_by(id=user.id)
+    result = await session.execute(stmt)
+    profile = result.scalars().first()
+    return UserCreateOutput.model_validate(profile)
